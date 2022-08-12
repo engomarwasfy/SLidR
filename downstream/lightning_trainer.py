@@ -152,7 +152,7 @@ class LightningDownstream(pl.LightningModule):
         return loss, c_matrix
 
     def validation_epoch_end(self, outputs):
-        c_matrix = sum([o[1] for o in outputs])
+        c_matrix = sum(o[1] for o in outputs)
 
         # remove the ignore_index from the confusion matrix
         c_matrix = torch.sum(self.all_gather(c_matrix), 0)

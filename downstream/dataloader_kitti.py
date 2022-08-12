@@ -174,18 +174,13 @@ def make_data_loader(config, phase, num_threads=0):
     Create the data loader for a given phase and a number of threads.
     """
     # select the desired transformations
-    if phase == "train":
-        transforms = make_transforms_clouds(config)
-    else:
-        transforms = None
-
+    transforms = make_transforms_clouds(config) if phase == "train" else None
     # instantiate the dataset
     dset = SemanticKITTIDataset(phase=phase, transforms=transforms, config=config)
     collate_fn = custom_collate_fn
     batch_size = config["batch_size"] // config["num_gpus"]
 
-    # create the loader
-    loader = torch.utils.data.DataLoader(
+    return torch.utils.data.DataLoader(
         dset,
         batch_size=batch_size,
         # shuffle=False if sampler else True,
@@ -195,6 +190,7 @@ def make_data_loader(config, phase, num_threads=0):
         pin_memory=False,
         # sampler=sampler,
         drop_last=phase == "train",
-        worker_init_fn=lambda id: np.random.seed(torch.initial_seed() // 2 ** 32 + id),
+        worker_init_fn=lambda id: np.random.seed(
+            torch.initial_seed() // 2**32 + id
+        ),
     )
-    return loader

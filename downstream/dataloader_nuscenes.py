@@ -91,18 +91,17 @@ class NuScenesDataset(Dataset):
         self.voxel_size = config["voxel_size"]
         self.cylinder = config["cylindrical_coordinates"]
 
-        if phase != "test":
-            if cached_nuscenes is not None:
-                self.nusc = cached_nuscenes
-            else:
-                self.nusc = NuScenes(
-                    version="v1.0-trainval", dataroot="datasets/nuscenes", verbose=False
-                )
-        else:
+        if phase == "test":
             self.nusc = NuScenes(
                 version="v1.0-test", dataroot="datasets/nuscenes", verbose=False
             )
 
+        elif cached_nuscenes is not None:
+            self.nusc = cached_nuscenes
+        else:
+            self.nusc = NuScenes(
+                version="v1.0-trainval", dataroot="datasets/nuscenes", verbose=False
+            )
         self.list_tokens = []
 
         # a skip ratio can be used to reduce the dataset size
@@ -216,18 +215,13 @@ def make_data_loader(config, phase, num_threads=0):
     This function is not used with pytorch lightning, but is used when evaluating.
     """
     # select the desired transformations
-    if phase == "train":
-        transforms = make_transforms_clouds(config)
-    else:
-        transforms = None
-
+    transforms = make_transforms_clouds(config) if phase == "train" else None
     # instantiate the dataset
     dset = NuScenesDataset(phase=phase, transforms=transforms, config=config)
     collate_fn = custom_collate_fn
     batch_size = config["batch_size"] // config["num_gpus"]
 
-    # create the loader
-    loader = torch.utils.data.DataLoader(
+    return torch.utils.data.DataLoader(
         dset,
         batch_size=batch_size,
         shuffle=phase == "train",
@@ -235,6 +229,7 @@ def make_data_loader(config, phase, num_threads=0):
         collate_fn=collate_fn,
         pin_memory=False,
         drop_last=phase == "train",
-        worker_init_fn=lambda id: np.random.seed(torch.initial_seed() // 2 ** 32 + id),
+        worker_init_fn=lambda id: np.random.seed(
+            torch.initial_seed() // 2**32 + id
+        ),
     )
-    return loader
