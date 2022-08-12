@@ -67,9 +67,7 @@ def make_transforms_clouds(config):
                 transforms.append(FlipAxis())
             else:
                 raise Exception(f"Unknown transformation: {t}")
-    if not len(transforms):
-        return None
-    return ComposeClouds(transforms)
+    return ComposeClouds(transforms) if len(transforms) else None
 
 
 class ComposeAsymmetrical:
@@ -283,9 +281,7 @@ def make_transforms_asymmetrical(config):
                 transforms.append(DropCuboids())
             else:
                 raise Exception(f"Unknown transformation {t}")
-    if not len(transforms):
-        return None
-    return ComposeAsymmetrical(transforms)
+    return ComposeAsymmetrical(transforms) if len(transforms) else None
 
 
 def make_transforms_asymmetrical_val(config):
@@ -295,11 +291,10 @@ def make_transforms_asymmetrical_val(config):
     """
     transforms = []
     if config["transforms_mixed"] is not None:
-        for t in config["transforms_mixed"]:
-            if t.lower() == "resizedcrop":
-                transforms.append(
-                    ResizedCrop(image_crop_size=config["crop_size"], crop_center=True)
-                )
-    if not len(transforms):
-        return None
-    return ComposeAsymmetrical(transforms)
+        transforms.extend(
+            ResizedCrop(image_crop_size=config["crop_size"], crop_center=True)
+            for t in config["transforms_mixed"]
+            if t.lower() == "resizedcrop"
+        )
+
+    return ComposeAsymmetrical(transforms) if len(transforms) else None

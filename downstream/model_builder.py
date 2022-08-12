@@ -30,8 +30,9 @@ def load_state_with_same_shape(model, weights):
     removed_weights = {
         k: v
         for k, v in weights.items()
-        if not (k in model_state and v.size() == model_state[k].size())
+        if k not in model_state or v.size() != model_state[k].size()
     }
+
     print("Loading weights:" + ", ".join(filtered_weights.keys()))
     print("")
     print("Not loading weights:" + ", ".join(removed_weights.keys()))
@@ -56,7 +57,12 @@ def make_model(config, load_path=None):
                     f"Checkpoint: {checkpoint['config'][cfg]}, "
                     f"Config: {config[cfg]}."
                 )
-        if set(checkpoint.keys()) == set(["epoch", "model", "optimizer", "train_criterion"]):
+        if set(checkpoint.keys()) == {
+            "epoch",
+            "model",
+            "optimizer",
+            "train_criterion",
+        }:
             print("Pre-trained weights are coming from DepthContrast.")
             pretraining_epochs = checkpoint["epoch"]
             print(f"==> Number of pre-training epochs {pretraining_epochs}")

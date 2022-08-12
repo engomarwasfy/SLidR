@@ -41,13 +41,11 @@ def post_act_block(
     else:
         raise NotImplementedError
 
-    m = spconv.SparseSequential(
+    return spconv.SparseSequential(
         conv,
         norm_fn(out_channels),
         nn.ReLU(),
     )
-
-    return m
 
 
 class SparseBasicBlock(spconv.SparseModule):
@@ -212,8 +210,7 @@ class VoxelBackBone8x(nn.Module):
         x_conv3 = self.conv3(x_conv2)
         x_conv4 = self.conv4(x_conv3)
 
-        out = self.conv_out(x_conv4)
-        return out
+        return self.conv_out(x_conv4)
 
 
 class VoxelResBackBone8x(nn.Module):

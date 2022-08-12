@@ -22,16 +22,16 @@ def main():
         "--dataset", type=str, default=None, help="Choose between nuScenes and KITTI"
     )
     args = parser.parse_args()
-    if args.cfg_file is None and args.dataset is not None:
-        if args.dataset.lower() == "kitti":
+    if args.cfg_file is None:
+        if args.dataset is None:
+            args.cfg_file = "config/semseg_nuscenes.yaml"
+
+        elif args.dataset.lower() == "kitti":
             args.cfg_file = "config/semseg_kitti.yaml"
         elif args.dataset.lower() == "nuscenes":
             args.cfg_file = "config/semseg_nuscenes.yaml"
         else:
             raise Exception(f"Dataset not recognized: {args.dataset}")
-    elif args.cfg_file is None:
-        args.cfg_file = "config/semseg_nuscenes.yaml"
-
     config = generate_config(args.cfg_file)
     if args.resume_path:
         config['resume_path'] = args.resume_path

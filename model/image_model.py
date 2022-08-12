@@ -137,9 +137,8 @@ class PPKTFeatureExtractor(nn.Module):
         if config["image_weights"] not in (None, "imagenet"):
             assert (
                 config["images_encoder"] == "resnet50"
-            ), "{} weights are only available for resnet50".format(
-                config["images_weights"]
-            )
+            ), f'{config["images_weights"]} weights are only available for resnet50'
+
             weights = adapt_weights(architecture=config["image_weights"])
             if weights is not None:
                 self.encoder.load_state_dict(weights)
@@ -181,8 +180,9 @@ class DinoVitFeatureExtractor(nn.Module):
             "vit_base_p8": ("vit_base", 8, 768),
         }
         assert (
-            config["images_encoder"] in dino_models.keys()
+            config["images_encoder"] in dino_models
         ), f"DilationFeatureExtractor is only available for {dino_models.keys()}"
+
 
         model_name, patch_size, embed_dim = dino_models[config["images_encoder"]]
 

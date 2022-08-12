@@ -18,5 +18,4 @@ class NCELoss(nn.Module):
         out = torch.div(logits, self.temperature)
         out = out.contiguous()
 
-        loss = self.criterion(out, target)
-        return loss
+        return self.criterion(out, target)

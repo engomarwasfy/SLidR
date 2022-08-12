@@ -2,15 +2,14 @@ import torch
 
 
 def confusion_matrix(preds, labels, num_classes):
-    hist = (
+    return (
         torch.bincount(
             num_classes * labels + preds,
-            minlength=num_classes ** 2,
+            minlength=num_classes**2,
         )
         .reshape(num_classes, num_classes)
         .float()
     )
-    return hist
 
 
 def compute_IoU_from_cmatrix(hist, ignore_index=None):

@@ -118,19 +118,18 @@ class NuScenesMatchDatasetSpconv(Dataset):
         self.shuffle = shuffle
         self.cloud_transforms = cloud_transforms
         self.mixed_transforms = mixed_transforms
-        if config["dataset"] == "nuscenes":
-            self.voxel_size = [0.1, 0.1, 0.2]  # nuScenes
-            self.point_cloud_range = np.array([-51.2, -51.2, -5.0, 51.2, 51.2, 3.0], dtype=np.float32)  # nuScenes
-            MAX_POINTS_PER_VOXEL = 10  # nuScenes
-            MAX_NUMBER_OF_VOXELS = 60000  # nuScenes
-            self._voxel_generator = VoxelGenerator(
-                voxel_size=self.voxel_size,
-                point_cloud_range=self.point_cloud_range,
-                max_num_points=MAX_POINTS_PER_VOXEL,
-                max_voxels=MAX_NUMBER_OF_VOXELS
-            )
-        else:
+        if config["dataset"] != "nuscenes":
             raise Exception("Dataset unknown")
+        self.voxel_size = [0.1, 0.1, 0.2]  # nuScenes
+        self.point_cloud_range = np.array([-51.2, -51.2, -5.0, 51.2, 51.2, 3.0], dtype=np.float32)  # nuScenes
+        MAX_POINTS_PER_VOXEL = 10  # nuScenes
+        MAX_NUMBER_OF_VOXELS = 60000  # nuScenes
+        self._voxel_generator = VoxelGenerator(
+            voxel_size=self.voxel_size,
+            point_cloud_range=self.point_cloud_range,
+            max_num_points=MAX_POINTS_PER_VOXEL,
+            max_voxels=MAX_NUMBER_OF_VOXELS
+        )
         self.superpixels_type = config["superpixels_type"]
         self.bilinear_decoder = config["decoder"] == "bilinear"
         self.num_point_features = 4
@@ -192,8 +191,8 @@ class NuScenesMatchDatasetSpconv(Dataset):
         pc = pc_original.points
         dist = pc[0] * pc[0] + pc[1] * pc[1]
         mask = (dist <= 2621.44) & \
-               (pc[2] >= self.point_cloud_range[2]) & \
-               (pc[2] <= self.point_cloud_range[5])
+                   (pc[2] >= self.point_cloud_range[2]) & \
+                   (pc[2] <= self.point_cloud_range[5])
         pc_original = LidarPointCloud(pc[:, mask])
 
         pc_ref = pc_original.points

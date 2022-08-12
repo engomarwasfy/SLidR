@@ -137,8 +137,7 @@ class ResNetBase(Model):
                     bn_momentum=bn_momentum,
                 ),
             )
-        layers = []
-        layers.append(
+        layers = [
             block(
                 self.inplanes,
                 planes,
@@ -148,19 +147,20 @@ class ResNetBase(Model):
                 conv_type=self.CONV_TYPE,
                 D=self.D,
             )
-        )
+        ]
+
         self.inplanes = planes * block.expansion
-        for i in range(1, blocks):
-            layers.append(
-                block(
-                    self.inplanes,
-                    planes,
-                    stride=1,
-                    dilation=dilation,
-                    conv_type=self.CONV_TYPE,
-                    D=self.D,
-                )
+        layers.extend(
+            block(
+                self.inplanes,
+                planes,
+                stride=1,
+                dilation=dilation,
+                conv_type=self.CONV_TYPE,
+                D=self.D,
             )
+            for _ in range(1, blocks)
+        )
 
         return nn.Sequential(*layers)
 

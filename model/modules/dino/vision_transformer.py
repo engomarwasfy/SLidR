@@ -29,8 +29,7 @@ def drop_path(x, drop_prob: float = 0., training: bool = False):
     shape = (x.shape[0],) + (1,) * (x.ndim - 1)  # work with diff dim tensors, not just 2D ConvNets
     random_tensor = keep_prob + torch.rand(shape, dtype=x.dtype, device=x.device)
     random_tensor.floor_()  # binarize
-    output = x.div(keep_prob) * random_tensor
-    return output
+    return x.div(keep_prob) * random_tensor
 
 
 class DropPath(nn.Module):
@@ -209,10 +208,7 @@ class VisionTransformer(nn.Module):
         for blk in self.blocks:
             x = blk(x)
         x = self.norm(x)
-        if all:
-            return x
-        else:
-            return x[:, 0]
+        return x if all else x[:, 0]
 
     def get_last_selfattention(self, x):
         x = self.prepare_tokens(x)
@@ -235,24 +231,42 @@ class VisionTransformer(nn.Module):
 
 
 def vit_tiny(patch_size=16, **kwargs):
-    model = VisionTransformer(
-        patch_size=patch_size, embed_dim=192, depth=12, num_heads=3, mlp_ratio=4,
-        qkv_bias=True, norm_layer=partial(nn.LayerNorm, eps=1e-6), **kwargs)
-    return model
+    return VisionTransformer(
+        patch_size=patch_size,
+        embed_dim=192,
+        depth=12,
+        num_heads=3,
+        mlp_ratio=4,
+        qkv_bias=True,
+        norm_layer=partial(nn.LayerNorm, eps=1e-6),
+        **kwargs
+    )
 
 
 def vit_small(patch_size=16, **kwargs):
-    model = VisionTransformer(
-        patch_size=patch_size, embed_dim=384, depth=12, num_heads=6, mlp_ratio=4,
-        qkv_bias=True, norm_layer=partial(nn.LayerNorm, eps=1e-6), **kwargs)
-    return model
+    return VisionTransformer(
+        patch_size=patch_size,
+        embed_dim=384,
+        depth=12,
+        num_heads=6,
+        mlp_ratio=4,
+        qkv_bias=True,
+        norm_layer=partial(nn.LayerNorm, eps=1e-6),
+        **kwargs
+    )
 
 
 def vit_base(patch_size=16, **kwargs):
-    model = VisionTransformer(
-        patch_size=patch_size, embed_dim=768, depth=12, num_heads=12, mlp_ratio=4,
-        qkv_bias=True, norm_layer=partial(nn.LayerNorm, eps=1e-6), **kwargs)
-    return model
+    return VisionTransformer(
+        patch_size=patch_size,
+        embed_dim=768,
+        depth=12,
+        num_heads=12,
+        mlp_ratio=4,
+        qkv_bias=True,
+        norm_layer=partial(nn.LayerNorm, eps=1e-6),
+        **kwargs
+    )
 
 
 class DINOHead(nn.Module):
@@ -282,8 +296,8 @@ class DINOHead(nn.Module):
     def _init_weights(self, m):
         if isinstance(m, nn.Linear):
             trunc_normal_(m.weight, std=.02)
-            if isinstance(m, nn.Linear) and m.bias is not None:
-                nn.init.constant_(m.bias, 0)
+        if isinstance(m, nn.Linear) and m.bias is not None:
+            nn.init.constant_(m.bias, 0)
 
     def forward(self, x):
         x = self.mlp(x)
@@ -303,7 +317,10 @@ def load_pretrained_weights(model, pretrained_weights, checkpoint_key, model_nam
         # remove `backbone.` prefix induced by multicrop wrapper
         state_dict = {k.replace("backbone.", ""): v for k, v in state_dict.items()}
         msg = model.load_state_dict(state_dict, strict=False)
-        print('Pretrained weights found at {} and loaded with msg: {}'.format(pretrained_weights, msg))
+        print(
+            f'Pretrained weights found at {pretrained_weights} and loaded with msg: {msg}'
+        )
+
     else:
         print("Please use the `--pretrained_weights` argument to indicate the path of the checkpoint to evaluate.")
         url = None
@@ -327,7 +344,10 @@ def load_pretrained_weights(model, pretrained_weights, checkpoint_key, model_nam
             url = "dino_resnet50_pretrain/dino_resnet50_pretrain.pth"
         if url is not None:
             print("Since no pretrained weights have been provided, we load the reference pretrained DINO weights.")
-            state_dict = torch.hub.load_state_dict_from_url(url="https://dl.fbaipublicfiles.com/dino/" + url)
+            state_dict = torch.hub.load_state_dict_from_url(
+                url=f"https://dl.fbaipublicfiles.com/dino/{url}"
+            )
+
             model.load_state_dict(state_dict, strict=True)
         else:
             print("There is no reference weights available for this model => We use random weights.")
