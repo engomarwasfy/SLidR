@@ -1,5 +1,5 @@
 torch == 1.8.1
-numpy == 1.20.2
+numpy == 1.22.0
 MinkowskiEngine == 0.5.3
 nuscenes-devkit == 1.1.9
 copy
